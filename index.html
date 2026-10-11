@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- Needed so media queries work on phones and tablets -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cloudline: live weather for any city</title>
+  <meta name="description" content="Cloudline shows the current weather and a 5-day forecast for any city, using live data from the OpenWeatherMap API.">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body id="top">
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ============ HEADER ============ -->
+  <header class="site-header">
+    <div class="wrap bar">
+      <a class="brand" href="#top" aria-label="Cloudline home">
+        <svg class="brand-mark" viewBox="0 0 32 32" width="30" height="30" aria-hidden="true">
+          <circle cx="12" cy="11" r="5" fill="#FFB703"/>
+          <path d="M9 25h14a5.5 5.5 0 0 0 .8-10.9A7.5 7.5 0 0 0 9.6 15.6 4.8 4.8 0 0 0 9 25z" fill="currentColor"/>
+        </svg>
+        Cloudline
+      </a>
+
+      <div class="units" role="group" aria-label="Temperature units">
+        <button class="unit-btn" type="button" data-units="metric" aria-pressed="true">&deg;C</button>
+        <button class="unit-btn" type="button" data-units="imperial" aria-pressed="false">&deg;F</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ============ SEARCH ============ -->
+    <section class="search-section" aria-labelledby="search-title">
+      <div class="wrap">
+        <h1 id="search-title">What is the sky doing over&hellip; anywhere?</h1>
+        <p class="lede">Search any city for the weather right now, the next 24 hours and the 5 days ahead.</p>
+
+        <form class="search-form" id="search-form" novalidate>
+          <div class="field">
+            <label for="city-input">City name</label>
+            <input id="city-input" name="city" type="text" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="search" placeholder="e.g. Lahore, Paris or Tokyo" aria-describedby="input-error">
+          </div>
+          <div class="search-actions">
+            <button class="btn" type="submit" id="search-btn">Search</button>
+            <button class="btn btn-ghost" type="button" id="locate-btn">
+              <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                <circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              Use my location
+            </button>
+          </div>
+        </form>
+        <p class="field-error" id="input-error" role="alert"></p>
+
+        <div class="recent" id="recent" hidden>
+          <span class="recent-label">Recent</span>
+          <ul class="recent-list" id="recent-list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ APP AREA ============ -->
+    <div class="wrap app" id="app" aria-busy="false">
+
+      <!-- first-run: ask for an API key -->
+      <section class="setup" id="setup" aria-labelledby="setup-title" hidden>
+        <h2 id="setup-title">One quick step: add your free API key</h2>
+        <p>Cloudline gets live weather from OpenWeatherMap, which needs a free API key.</p>
+        <ol class="setup-steps">
+          <li>Create a free account at <a href="https://openweathermap.org/api" target="_blank" rel="noopener">openweathermap.org</a>.</li>
+          <li>Open <strong>API keys</strong> in your profile and copy the default key.</li>
+          <li>Paste it below. It is saved only in this browser.</li>
+        </ol>
+        <form class="key-form" id="key-form" novalidate>
+          <div class="field">
+            <label for="key-input">OpenWeatherMap API key</label>
+            <input id="key-input" type="text" autocomplete="off" spellcheck="false" placeholder="32 letters and numbers" aria-describedby="key-error">
+          </div>
+          <button class="btn" type="submit">Save key and show weather</button>
+        </form>
+        <p class="field-error" id="key-error" role="alert"></p>
+        <p class="setup-note">A brand-new key can take up to a couple of hours to start working. If you see an &ldquo;API key&rdquo; error, wait a while and try again.</p>
+      </section>
+
+      <!-- loading -->
+      <div class="loading" id="loading" role="status" hidden>
+        <div class="loading-head">
+          <span class="spinner" aria-hidden="true"></span>
+          <p id="loading-text">Loading weather&hellip;</p>
+        </div>
+        <div class="skeleton" aria-hidden="true">
+          <div class="sk sk-hero"></div>
+          <div class="sk sk-card"></div>
+        </div>
+      </div>
+
+      <!-- error -->
+      <section class="error-card" id="error" role="alert" aria-labelledby="error-title" hidden>
+        <svg class="error-icon" viewBox="0 0 24 24" width="36" height="36" aria-hidden="true">
+          <path d="M12 3 2.5 20h19L12 3Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          <path d="M12 10v4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="12" cy="17.3" r="1.1" fill="currentColor"/>
+        </svg>
+        <div class="error-body">
+          <h2 id="error-title"></h2>
+          <p id="error-text"></p>
+          <div class="error-actions">
+            <button class="btn" type="button" id="retry-btn" hidden>Try again</button>
+            <button class="btn btn-ghost" type="button" id="change-key-btn" hidden>Change API key</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- results -->
+      <div class="results" id="results" hidden>
+        <article class="hero" id="hero" data-sky="clear-day" aria-labelledby="city-name">
+          <div class="hero-top">
+            <div>
+              <h2 id="city-name"></h2>
+              <p class="local-time" id="local-time"></p>
+            </div>
+            <span class="wicon hero-icon" id="hero-icon" aria-hidden="true"></span>
+          </div>
+          <p class="temp"><span id="temp"></span><span class="temp-unit" id="temp-unit"></span></p>
+          <p class="condition" id="condition"></p>
+          <p class="hilo" id="hilo"></p>
+        </article>
+
+        <section class="panel details" aria-labelledby="details-title">
+          <h2 class="panel-title" id="details-title">Right now</h2>
+          <dl class="detail-grid" id="detail-grid"></dl>
+        </section>
+
+        <section class="panel hourly" aria-labelledby="hourly-title">
+          <h2 class="panel-title" id="hourly-title">Next 24 hours</h2>
+          <ol class="hour-list" id="hour-list"></ol>
+        </section>
+
+        <section class="panel daily" aria-labelledby="daily-title">
+          <h2 class="panel-title" id="daily-title">5-day forecast</h2>
+          <ol class="day-list" id="day-list"></ol>
+        </section>
+      </div>
+
+      <noscript>
+        <p class="error-card noscript">Cloudline needs JavaScript to fetch live weather. Please turn it on and reload the page.</p>
+      </noscript>
+    </div>
+
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer">
+    <div class="wrap footer-grid">
+      <p class="footer-note">Weather data from <a href="https://openweathermap.org/" target="_blank" rel="noopener">OpenWeatherMap</a>. Cloudline is a demo project made for a frontend internship at Progree.</p>
+      <button class="link-btn" type="button" id="footer-key-btn" hidden>Change API key</button>
+    </div>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

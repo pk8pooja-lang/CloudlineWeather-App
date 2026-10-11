@@ -1,0 +1,937 @@
+/* =========================================================
+   Cloudline: weather app
+   Layout: CSS Grid + Flexbox, mobile-first.
+   Breakpoints (min-width): 480px, 600px, 768px, 960px
+   ========================================================= */
+
+/* ---------- Design tokens (light) ---------- */
+:root {
+  --bg: #F3F6FB;
+  --card: #FFFFFF;
+  --ink: #0F1B33;
+  --muted: #52607A;
+  --line: rgba(15, 27, 51, 0.14);
+  --accent: #0A4DB0;
+  --accent-ink: #FFFFFF;
+  --sun: #FFB703;
+  --ring: rgba(10, 77, 176, 0.1);
+  --glow: rgba(255, 183, 3, 0.24);
+  --track: rgba(15, 27, 51, 0.1);
+  --error: #B3261E;
+  --error-bg: #FDECEA;
+
+  --font: "Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+
+  --gutter: clamp(1rem, 5vw, 2rem);
+  --radius: 1rem;
+}
+
+/* ---------- Design tokens (dark, follows the phone setting) ---------- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0A1020;
+    --card: #131C33;
+    --ink: #EAF0FB;
+    --muted: #A3B0CB;
+    --line: rgba(234, 240, 251, 0.18);
+    --accent: #7BA8FF;
+    --accent-ink: #0A1020;
+    --ring: rgba(123, 168, 255, 0.14);
+    --glow: rgba(123, 168, 255, 0.2);
+    --track: rgba(234, 240, 251, 0.16);
+    --error: #FF8A84;
+    --error-bg: #3A1A1C;
+  }
+}
+
+/* ---------- Reset and base ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+h1, h2, h3, p, ul, ol, dl, dd, figure {
+  margin: 0;
+}
+
+ul, ol {
+  padding: 0;
+  list-style: none;
+}
+
+h1, h2, h3 {
+  line-height: 1.12;
+  overflow-wrap: break-word;
+}
+
+a {
+  color: var(--accent);
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -4rem;
+  z-index: 50;
+  padding: 0.6rem 1rem;
+  background: var(--ink);
+  color: var(--bg);
+  border-radius: 0.6rem;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 68rem;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 3rem;
+  padding: 0.7rem 1.3rem;
+  border: 2px solid var(--accent);
+  border-radius: 0.75rem;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  cursor: pointer;
+  transition: filter 0.15s ease, background-color 0.15s ease;
+}
+
+.btn:hover:not(:disabled) {
+  filter: brightness(1.12);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--accent);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--ring);
+  filter: none;
+}
+
+.link-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+/* ---------- Header ---------- */
+.site-header {
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 4rem;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  color: var(--ink);
+}
+
+.brand-mark {
+  color: var(--accent);
+}
+
+.units {
+  display: inline-flex;
+  padding: 0.2rem;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+}
+
+.unit-btn {
+  min-width: 3rem;
+  min-height: 2.2rem;
+  padding: 0.2rem 0.8rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.unit-btn[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* ---------- Search section ---------- */
+.search-section {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  padding-block: 2.5rem 1.75rem;
+}
+
+/* map-style rings and a warm glow, fading toward the bottom */
+.search-section::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+  background-image:
+    repeating-radial-gradient(circle at 88% 12%, transparent 0 38px, var(--ring) 38px 40px),
+    radial-gradient(34rem 18rem at 4% 0%, var(--glow), transparent 70%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 45%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 45%, transparent 100%);
+}
+
+.search-section h1 {
+  max-width: 18ch;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 8vw, 3.6rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.04;
+}
+
+.lede {
+  margin-top: 0.9rem;
+  max-width: 36rem;
+  font-size: 1.1rem;
+  color: var(--muted);
+}
+
+.search-form {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1.75rem;
+  max-width: 44rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.field label {
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.field input {
+  width: 100%;
+  min-height: 3.1rem;
+  padding: 0.6rem 0.9rem;
+  border: 2px solid var(--line);
+  border-radius: 0.75rem;
+  background: var(--card);
+  font-size: 1.05rem;
+}
+
+.field input:focus {
+  border-color: var(--accent);
+}
+
+.field input[aria-invalid="true"] {
+  border-color: var(--error);
+}
+
+.field-error {
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--error);
+}
+
+.field-error:empty {
+  display: none;
+}
+
+.search-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.recent {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-top: 1.1rem;
+}
+
+.recent-label {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.recent-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.chip {
+  min-height: 2.2rem;
+  padding: 0.25rem 0.85rem;
+  border: 2px solid var(--line);
+  border-radius: 999px;
+  background: var(--card);
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.chip:hover {
+  border-color: var(--accent);
+}
+
+/* ---------- App area ---------- */
+.app {
+  padding-block: 0.5rem 3.5rem;
+  min-height: 24rem;
+}
+
+/* ---------- Setup card ---------- */
+.setup {
+  max-width: 40rem;
+  padding: 1.5rem;
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.setup h2 {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.setup p {
+  margin-top: 0.6rem;
+  color: var(--muted);
+}
+
+.setup-steps {
+  display: grid;
+  gap: 0.4rem;
+  margin: 1rem 0 0 1.25rem;
+  padding: 0;
+  list-style: decimal;
+}
+
+.key-form {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1.25rem;
+}
+
+.setup-note {
+  font-size: 0.92rem;
+}
+
+/* ---------- Loading ---------- */
+.loading {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.loading-head {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-weight: 700;
+}
+
+.spinner {
+  width: 1.7rem;
+  height: 1.7rem;
+  border: 3px solid var(--track);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.skeleton {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.sk {
+  border-radius: var(--radius);
+  background: linear-gradient(100deg, var(--track) 30%, var(--line) 50%, var(--track) 70%);
+  background-size: 220% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.sk-hero {
+  min-height: 15rem;
+}
+
+.sk-card {
+  min-height: 11rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -120% 0; }
+}
+
+/* ---------- Error ---------- */
+.error-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  max-width: 44rem;
+  padding: 1.25rem;
+  background: var(--error-bg);
+  color: var(--ink);
+  border: 2px solid var(--error);
+  border-radius: var(--radius);
+}
+
+.error-icon {
+  flex: none;
+  color: var(--error);
+}
+
+.error-body {
+  min-width: 0;
+  overflow-wrap: anywhere; /* a very long city name must not push the page wider */
+}
+
+.error-body h2 {
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.error-body p {
+  margin-top: 0.4rem;
+}
+
+.error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-top: 1rem;
+}
+
+.noscript {
+  margin-top: 1rem;
+}
+
+/* ---------- Results ---------- */
+.results {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-areas:
+    "hero"
+    "details"
+    "hourly"
+    "daily";
+}
+
+.hero { grid-area: hero; }
+.details { grid-area: details; }
+.hourly { grid-area: hourly; }
+.daily { grid-area: daily; }
+
+.panel {
+  min-width: 0;
+  padding: 1.25rem;
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.panel-title {
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+/* The big weather card. Its colour follows the sky. */
+.hero {
+  --sky-a: #0A4DB0;
+  --sky-b: #1F74DC;
+  --sky-glow: rgba(255, 214, 102, 0.55);
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  min-width: 0;
+  padding: 1.5rem;
+  background: linear-gradient(160deg, var(--sky-a), var(--sky-b));
+  color: #FFFFFF;
+  border-radius: var(--radius);
+  box-shadow: 0 12px 30px -14px rgba(10, 30, 70, 0.55);
+}
+
+/* glow plus map rings, so every sky has some texture */
+.hero::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+  background-image:
+    radial-gradient(14rem 14rem at 92% 6%, var(--sky-glow), transparent 70%),
+    repeating-radial-gradient(circle at 92% 6%, transparent 0 34px, rgba(255, 255, 255, 0.1) 34px 36px);
+}
+
+.hero[data-sky="clear-day"] { --sky-a: #0A4DB0; --sky-b: #1F74DC; --sky-glow: rgba(255, 214, 102, 0.6); }
+.hero[data-sky="clear-night"] { --sky-a: #0B1437; --sky-b: #253C7C; --sky-glow: rgba(190, 205, 255, 0.35); }
+.hero[data-sky="clouds"] { --sky-a: #3A4A66; --sky-b: #61728E; --sky-glow: rgba(255, 255, 255, 0.22); }
+.hero[data-sky="rain"] { --sky-a: #243852; --sky-b: #46607F; --sky-glow: rgba(140, 180, 255, 0.28); }
+.hero[data-sky="thunder"] { --sky-a: #2A2147; --sky-b: #4B3F78; --sky-glow: rgba(255, 214, 102, 0.3); }
+.hero[data-sky="snow"] { --sky-a: #3F5C7A; --sky-b: #6385A6; --sky-glow: rgba(255, 255, 255, 0.35); }
+.hero[data-sky="mist"] { --sky-a: #4D5765; --sky-b: #6E7988; --sky-glow: rgba(255, 255, 255, 0.25); }
+
+.hero-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.hero-top > div {
+  min-width: 0;
+}
+
+.hero h2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 6vw, 2rem);
+  font-weight: 700;
+}
+
+.local-time {
+  margin-top: 0.3rem;
+  font-size: 0.95rem;
+  opacity: 0.92;
+}
+
+.wicon {
+  display: block;
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+.wicon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.hero-icon {
+  width: clamp(4rem, 18vw, 5.5rem);
+  height: clamp(4rem, 18vw, 5.5rem);
+}
+
+.temp {
+  display: flex;
+  align-items: flex-start;
+  margin-top: 1.25rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  line-height: 0.9;
+}
+
+#temp {
+  font-size: clamp(4.5rem, 20vw, 7rem);
+  letter-spacing: -0.04em;
+}
+
+.temp-unit {
+  margin-top: 0.4rem;
+  font-size: clamp(1.5rem, 6vw, 2.2rem);
+}
+
+.condition {
+  margin-top: 0.9rem;
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.hilo {
+  margin-top: 0.3rem;
+  font-size: 1rem;
+  opacity: 0.92;
+}
+
+/* ---------- Details ---------- */
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.detail {
+  min-width: 0;
+  padding: 0.75rem 0.9rem;
+  background: var(--bg);
+  border-radius: 0.75rem;
+}
+
+.detail dt {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.detail dd {
+  margin-top: 0.1rem;
+  font-size: 1.2rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Hourly ---------- */
+.hour-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem 0.5rem;
+}
+
+.hour {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  min-width: 0;
+  text-align: center;
+}
+
+.hour-time {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.hour-temp {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.hour-rain {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+/* ---------- Daily ---------- */
+.day-list {
+  display: grid;
+}
+
+.day {
+  display: grid;
+  grid-template-columns: minmax(4.6rem, 6rem) 2.75rem minmax(0, 1fr);
+  align-items: center;
+  column-gap: 0.75rem;
+  padding-block: 0.7rem;
+  border-top: 1px solid var(--line);
+}
+
+.day:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.day-label {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.day-name {
+  font-weight: 800;
+}
+
+.day-date {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.day-temps {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.day-min,
+.day-max {
+  flex: none;
+  width: 2.6rem;
+  font-weight: 800;
+}
+
+.day-min {
+  color: var(--muted);
+  text-align: right;
+}
+
+.range {
+  position: relative;
+  flex: 1;
+  min-width: 2rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  background: var(--track);
+}
+
+.range-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--l);
+  width: var(--w);
+  border-radius: 999px;
+  background: linear-gradient(90deg, #4FA3FF, var(--sun));
+}
+
+.day-rain {
+  grid-column: 3;
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.day-rain:empty {
+  display: none;
+}
+
+/* ---------- Footer ---------- */
+.site-footer {
+  padding-block: 2rem;
+  border-top: 1px solid var(--line);
+}
+
+.footer-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.footer-note {
+  max-width: 36rem;
+  font-size: 0.92rem;
+  color: var(--muted);
+}
+
+/* =========================================================
+   480px and up: large phones
+   ========================================================= */
+@media (min-width: 480px) {
+  .search-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .panel {
+    padding: 1.5rem;
+  }
+
+  .hero {
+    padding: 1.75rem;
+  }
+}
+
+/* =========================================================
+   600px and up: small tablets
+   ========================================================= */
+@media (min-width: 600px) {
+  .hour-list {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .search-form {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+
+  .search-form .search-actions {
+    flex-wrap: nowrap;
+  }
+
+  .day {
+    grid-template-columns: minmax(5rem, 7rem) 2.75rem minmax(0, 1fr) 4.5rem;
+  }
+
+  .day-rain {
+    grid-column: auto;
+    margin-top: 0;
+    text-align: right;
+  }
+}
+
+/* =========================================================
+   768px and up: tablets in portrait
+   ========================================================= */
+@media (min-width: 768px) {
+  .search-section {
+    padding-block: 3.5rem 2.25rem;
+  }
+
+  .detail-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .skeleton {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* =========================================================
+   960px and up: laptops. Big card on the left, details on the right.
+   ========================================================= */
+@media (min-width: 960px) {
+  .results {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    grid-template-areas:
+      "hero details"
+      "hourly hourly"
+      "daily daily";
+    gap: 1.5rem;
+  }
+
+  .details {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .detail-grid {
+    flex: 1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: stretch;
+  }
+
+  .hero {
+    padding: 2rem;
+  }
+}
+
+/* ---------- Very small phones ---------- */
+@media (max-width: 359px) {
+  .brand {
+    font-size: 1.25rem;
+  }
+
+  .btn {
+    width: 100%;
+  }
+
+  .unit-btn {
+    min-width: 2.6rem;
+    padding-inline: 0.5rem;
+  }
+
+  .day {
+    grid-template-columns: minmax(4rem, 5rem) 2.4rem minmax(0, 1fr);
+    column-gap: 0.5rem;
+  }
+
+  .day-min,
+  .day-max {
+    width: 2.3rem;
+  }
+}
+
+/* ---------- Respect people who prefer less motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .spinner {
+    animation-duration: 2.4s;
+  }
+
+  .sk {
+    animation: none;
+  }
+
+  .btn {
+    transition: none;
+  }
+}
